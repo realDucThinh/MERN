@@ -1,11 +1,16 @@
 import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
 import { WorkoutCard } from "./components/WorkoutCard";
 import { WorkoutForm } from "./components/WorkoutForm";
+import { Login } from "./components/Login";
+import { Signup } from "./components/Signup";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
 import { Dumbbell } from "lucide-react";
 import { API_ENDPOINTS } from "./config";
+import { useAuthContext } from "./hooks/useAuthContext";
+import { useLogout } from "./hooks/useLogout";
 
 interface Workout {
   _id: string;
@@ -16,22 +21,31 @@ interface Workout {
   updatedAt?: string;
 }
 
-interface User {
-  name: string;
-  email: string;
-  avatar: string;
-}
-
-export default function App() {
-  const [user, setUser] = useState<User | null>(null);
+function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuthContext();
+  const { logout } = useLogout();
 
   // Fetch workouts from API
   useEffect(() => {
     const fetchWorkouts = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const response = await fetch(API_ENDPOINTS.workouts);
+        const response = await fetch(API_ENDPOINTS.workouts, {
+          headers: {
+            'Authorization': `Bearer ${user.token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch workouts');
+        }
+
         const data = await response.json();
         setWorkouts(data);
       } catch (error) {
@@ -43,21 +57,11 @@ export default function App() {
     };
 
     fetchWorkouts();
-  }, []);
-
-  const handleLogin = () => {
-    // Mock Google login
-    const mockUser = {
-      name: "John Doe",
-      email: "john.doe@example.com",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-    };
-    setUser(mockUser);
-    toast.success("Logged in successfully!");
-  };
+  }, [user]);
 
   const handleLogout = () => {
-    setUser(null);
+    logout();
+    setWorkouts([]);
     toast.success("Logged out successfully!");
   };
 
@@ -72,20 +76,22 @@ export default function App() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`,
         },
         body: JSON.stringify(workout),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to add workout');
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to add workout');
       }
 
       const newWorkout = await response.json();
       setWorkouts([newWorkout, ...workouts]);
       toast.success("Workout added successfully!");
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding workout:', error);
-      toast.error('Failed to add workout');
+      toast.error(error.message || 'Failed to add workout');
     }
   };
 
@@ -98,6 +104,9 @@ export default function App() {
     try {
       const response = await fetch(`${API_ENDPOINTS.workouts}/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+        },
       });
 
       if (!response.ok) {
@@ -112,9 +121,15 @@ export default function App() {
     }
   };
 
+  const mockUser = user ? {
+    name: user.email.split('@')[0],
+    email: user.email,
+    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+  } : null;
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar user={user} onLogin={handleLogin} onLogout={handleLogout} />
+      <Navbar user={mockUser} onLogin={() => {}} onLogout={handleLogout} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -136,9 +151,7 @@ export default function App() {
                 <Dumbbell className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-gray-900 mb-2">No workouts yet</h3>
                 <p className="text-gray-600">
-                  {user
-                    ? "Add your first workout to get started!"
-                    : "Please login to add workouts"}
+                  Add your first workout to get started!
                 </p>
               </div>
             ) : (
@@ -164,5 +177,19 @@ export default function App() {
 
       <Toaster position="bottom-right" />
     </div>
+  );
+}
+
+export default function App() {
+  const { user } = useAuthContext();
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={user ? <Home /> : <Navigate to="/login" />} />
+        <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

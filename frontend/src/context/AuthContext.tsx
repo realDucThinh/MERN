@@ -1,0 +1,57 @@
+import { createContext, useReducer, useEffect, ReactNode } from 'react';
+
+interface User {
+  email: string;
+  token: string;
+}
+
+interface AuthState {
+  user: User | null;
+}
+
+interface AuthContextType extends AuthState {
+  dispatch: React.Dispatch<AuthAction>;
+}
+
+type AuthAction = 
+  | { type: 'LOGIN'; payload: User }
+  | { type: 'LOGOUT' };
+
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const authReducer = (state: AuthState, action: AuthAction): AuthState => {
+  switch (action.type) {
+    case 'LOGIN':
+      return { user: action.payload };
+    case 'LOGOUT':
+      return { user: null };
+    default:
+      return state;
+  }
+};
+
+interface AuthContextProviderProps {
+  children: ReactNode;
+}
+
+export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
+  const [state, dispatch] = useReducer(authReducer, {
+    user: null,
+  });
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      dispatch({ type: 'LOGIN', payload: user });
+    }
+  }, []);
+
+  console.log('AuthContext state:', state);
+
+  return (
+    <AuthContext.Provider value={{ ...state, dispatch }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};

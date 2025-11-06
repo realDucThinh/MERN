@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const app = express();
 const workoutsRoutes = require("./routes/workouts");
+const userRoutes = require("./routes/user");
 
 // ---------------------- MIDDLEWARE ----------------------
 app.use(cors()); // Enable CORS for all routes
@@ -11,6 +12,7 @@ app.use(express.json());
 
 // ---------------------- ROUTES ----------------------
 app.use("/api/workouts", workoutsRoutes);
+app.use("/api/user", userRoutes);
 
 // ---------------------- DATABASE ----------------------
 mongoose
