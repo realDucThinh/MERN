@@ -1,68 +1,71 @@
-import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSignup } from '../hooks/useSignup';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Dumbbell, Eye, EyeOff } from 'lucide-react';
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Checkbox } from "./ui/checkbox";
+import { Dumbbell, Eye, EyeOff } from "lucide-react";
 
-export const Signup = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+interface SignupPageProps {
+  onSignup: (name: string, email: string, password: string) => void;
+  onSwitchToLogin: () => void;
+}
+
+export function SignupPage({ onSignup, onSwitchToLogin }: SignupPageProps) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState('');
-  const { signup, error: signupError, isLoading } = useSignup();
-  const navigate = useNavigate();
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!name.trim()) {
-      setError('Please enter your name');
+      setError("Please enter your name");
       return;
     }
 
     if (!email.trim()) {
-      setError('Please enter your email');
+      setError("Please enter your email");
       return;
     }
 
     if (!/\S+@\S+\.\S+/.test(email)) {
-      setError('Please enter a valid email address');
+      setError("Please enter a valid email address");
       return;
     }
 
     if (!password) {
-      setError('Please enter a password');
+      setError("Please enter a password");
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError("Password must be at least 6 characters");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
-    const success = await signup(email, password);
-    if (success) {
-      navigate('/');
+    if (!agreeToTerms) {
+      setError("Please agree to the Terms and Conditions");
+      return;
     }
-  };
 
-  const displayError = error || signupError;
+    onSignup(name, email, password);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center p-4">
-      <div className="w-full" style={{ maxWidth: '380px' }}>
+      <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-2xl mb-4">
@@ -72,7 +75,7 @@ export const Signup = () => {
           <p className="text-gray-600">Start tracking your fitness today</p>
         </div>
 
-        <Card className="border-green-100 shadow-lg w-full">
+        <Card className="border-green-100 shadow-lg">
           <CardHeader className="space-y-1">
             <CardTitle className="text-gray-900">Create an account</CardTitle>
             <CardDescription>
@@ -116,7 +119,7 @@ export const Signup = () => {
                 <div className="relative">
                   <Input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     placeholder="Create a password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -125,22 +128,7 @@ export const Signup = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-gray-400 hover:text-gray-600"
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      zIndex: 10,
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: '0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                    tabIndex={-1}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     {showPassword ? (
                       <EyeOff className="w-4 h-4" />
@@ -158,7 +146,7 @@ export const Signup = () => {
                 <div className="relative">
                   <Input
                     id="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
+                    type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -167,22 +155,7 @@ export const Signup = () => {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="text-gray-400 hover:text-gray-600"
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      zIndex: 10,
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: '0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                    tabIndex={-1}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="w-4 h-4" />
@@ -193,26 +166,53 @@ export const Signup = () => {
                 </div>
               </div>
 
-              {displayError && (
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="terms"
+                  checked={agreeToTerms}
+                  onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
+                  className="mt-1 border-gray-300 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                />
+                <label
+                  htmlFor="terms"
+                  className="text-sm text-gray-600 leading-tight cursor-pointer"
+                >
+                  I agree to the{" "}
+                  <button
+                    type="button"
+                    className="text-green-600 hover:text-green-700 hover:underline"
+                  >
+                    Terms and Conditions
+                  </button>{" "}
+                  and{" "}
+                  <button
+                    type="button"
+                    className="text-green-600 hover:text-green-700 hover:underline"
+                  >
+                    Privacy Policy
+                  </button>
+                </label>
+              </div>
+
+              {error && (
                 <div className="text-red-600 text-sm bg-red-50 p-3 rounded-md border border-red-200">
-                  {displayError}
+                  {error}
                 </div>
               )}
 
               <Button
                 type="submit"
                 className="w-full bg-green-600 hover:bg-green-700 text-white"
-                disabled={isLoading}
               >
-                {isLoading ? 'Creating account...' : 'Create account'}
+                Create account
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm text-gray-600">
-              Already have an account?{' '}
+              Already have an account?{" "}
               <button
                 type="button"
-                onClick={() => navigate('/login')}
+                onClick={onSwitchToLogin}
                 className="text-green-600 hover:text-green-700 hover:underline"
               >
                 Sign in
@@ -223,4 +223,4 @@ export const Signup = () => {
       </div>
     </div>
   );
-};
+}

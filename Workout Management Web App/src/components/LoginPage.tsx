@@ -1,50 +1,46 @@
-import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useLogin } from '../hooks/useLogin';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Dumbbell, Eye, EyeOff } from 'lucide-react';
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Dumbbell, Eye, EyeOff } from "lucide-react";
 
-export const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+interface LoginPageProps {
+  onLogin: (email: string, password: string) => void;
+  onSwitchToSignup: () => void;
+}
+
+export function LoginPage({ onLogin, onSwitchToSignup }: LoginPageProps) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const { login, error: loginError, isLoading } = useLogin();
-  const navigate = useNavigate();
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!email.trim()) {
-      setError('Please enter your email');
+      setError("Please enter your email");
       return;
     }
 
     if (!password) {
-      setError('Please enter your password');
+      setError("Please enter your password");
       return;
     }
 
     if (!/\S+@\S+\.\S+/.test(email)) {
-      setError('Please enter a valid email address');
+      setError("Please enter a valid email address");
       return;
     }
 
-    const success = await login(email, password);
-    if (success) {
-      navigate('/');
-    }
+    onLogin(email, password);
   };
-
-  const displayError = error || loginError;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center p-4">
-      <div className="w-full" style={{ maxWidth: '380px' }}>
+      <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-2xl mb-4">
@@ -54,7 +50,7 @@ export const Login = () => {
           <p className="text-gray-600">Track your fitness journey</p>
         </div>
 
-        <Card className="border-green-100 shadow-lg w-full">
+        <Card className="border-green-100 shadow-lg">
           <CardHeader className="space-y-1">
             <CardTitle className="text-gray-900">Welcome back</CardTitle>
             <CardDescription>
@@ -92,7 +88,7 @@ export const Login = () => {
                 <div className="relative">
                   <Input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -101,22 +97,7 @@ export const Login = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-gray-400 hover:text-gray-600"
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      zIndex: 10,
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: '0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                    tabIndex={-1}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     {showPassword ? (
                       <EyeOff className="w-4 h-4" />
@@ -127,26 +108,25 @@ export const Login = () => {
                 </div>
               </div>
 
-              {displayError && (
+              {error && (
                 <div className="text-red-600 text-sm bg-red-50 p-3 rounded-md border border-red-200">
-                  {displayError}
+                  {error}
                 </div>
               )}
 
               <Button
                 type="submit"
                 className="w-full bg-green-600 hover:bg-green-700 text-white"
-                disabled={isLoading}
               >
-                {isLoading ? 'Signing in...' : 'Sign in'}
+                Sign in
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm text-gray-600">
-              Don't have an account?{' '}
+              Don't have an account?{" "}
               <button
                 type="button"
-                onClick={() => navigate('/signup')}
+                onClick={onSwitchToSignup}
                 className="text-green-600 hover:text-green-700 hover:underline"
               >
                 Sign up
@@ -161,4 +141,4 @@ export const Login = () => {
       </div>
     </div>
   );
-};
+}
