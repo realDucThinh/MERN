@@ -154,10 +154,6 @@ export const Login = () => {
             </div>
           </CardContent>
         </Card>
-
-        <p className="text-center text-sm text-gray-500 mt-6">
-          By continuing, you agree to our Terms of Service and Privacy Policy
-        </p>
       </div>
     </div>
   );
