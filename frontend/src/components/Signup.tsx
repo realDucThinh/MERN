@@ -54,7 +54,7 @@ export const Signup = () => {
 
     const success = await signup(email, password);
     if (success) {
-      navigate('/');
+      navigate('/home');
     }
   };
 

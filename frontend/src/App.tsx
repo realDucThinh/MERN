@@ -186,9 +186,10 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={user ? <Home /> : <Navigate to="/login" />} />
-        <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
+        <Route path="/" element={!user ? <Login /> : <Navigate to="/home" />} />
+        <Route path="/login" element={!user ? <Login /> : <Navigate to="/home" />} />
+        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/home" />} />
+        <Route path="/home" element={user ? <Home /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );
